@@ -1,0 +1,22 @@
+PODS:
+  - enhanced_platform_menu (0.0.1):
+    - FlutterMacOS
+  - FlutterMacOS (1.0.0)
+
+DEPENDENCIES:
+  - enhanced_platform_menu (from `Flutter/ephemeral/.symlinks/plugins/enhanced_platform_menu/macos`)
+  - FlutterMacOS (from `Flutter/ephemeral`)
+
+EXTERNAL SOURCES:
+  enhanced_platform_menu:
+    :path: Flutter/ephemeral/.symlinks/plugins/enhanced_platform_menu/macos
+  FlutterMacOS:
+    :path: Flutter/ephemeral
+
+SPEC CHECKSUMS:
+  enhanced_platform_menu: 344ff6bdbe26cabb4755d5a5413002df2344abe5
+  FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
+
+PODFILE CHECKSUM: 54d867c82ac51cbd61b565781b9fada492027009
+
+COCOAPODS: 1.16.2
