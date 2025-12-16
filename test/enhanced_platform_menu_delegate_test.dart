@@ -18,26 +18,24 @@ void main() {
       lastCall = null;
       lastArguments = null;
       // Install a mock handler to capture outbound invokes from Dart to platform.
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
-        const MethodChannel(channelName),
-        (call) async {
-          lastCall = call;
-          lastArguments = call.arguments;
-          return null;
-        },
-      );
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(const MethodChannel(channelName), (
+            call,
+          ) async {
+            lastCall = call;
+            lastArguments = call.arguments;
+            return null;
+          });
     });
 
     tearDown(() async {
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
-        const MethodChannel(channelName),
-        null,
-      );
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(const MethodChannel(channelName), null);
     });
 
     test(
       'setMenus serializes menus, groups, leafs, shortcuts, checked, identifier/removeDefaults/icons',
-          () async {
+      () async {
         // Build a menu with:
         // - A group of 2 items
         // - A leaf item with checked + shortcut
@@ -51,7 +49,10 @@ void main() {
         final leaf = EnhancedPlatformMenuItem(
           label: 'LeafC',
           checked: true,
-          shortcut: const SingleActivator(LogicalKeyboardKey.keyC, control: true),
+          shortcut: const SingleActivator(
+            LogicalKeyboardKey.keyC,
+            control: true,
+          ),
         );
 
         final topMenu = EnhancedPlatformMenu.standard(
@@ -59,7 +60,7 @@ void main() {
           label: 'File',
           menus: [
             group, // -> two leafs + separator (since hasMore)
-            leaf,  // then the leaf item
+            leaf, // then the leaf item
           ],
           removeDefaultItems: true,
         );
@@ -90,7 +91,7 @@ void main() {
         final std = menus[0];
         expect(std['kind'], 'menu');
         expect(std['label'], 'File');
-        expect(std['identifier'], 'file');      // enum name
+        expect(std['identifier'], 'file'); // enum name
         expect(std['removeDefaults'], true);
 
         final children = (std['children'] as List).cast<Map>();
@@ -139,56 +140,57 @@ void main() {
   });
 
   group('EnhancedPlatformMenuDelegate debug lock/unlock', () {
-    testWidgets('debugLockDelegate allows same context, rejects different context (assert-time)', (
-      tester,
-    ) async {
-      final delegate = EnhancedPlatformMenuDelegate();
+    testWidgets(
+      'debugLockDelegate allows same context, rejects different context (assert-time)',
+      (tester) async {
+        final delegate = EnhancedPlatformMenuDelegate();
 
-      // Two different BuildContexts in the tree
-      late BuildContext ctx1;
-      late BuildContext ctx2;
+        // Two different BuildContexts in the tree
+        late BuildContext ctx1;
+        late BuildContext ctx2;
 
-      await tester.pumpWidget(
-        Directionality(
-          textDirection: TextDirection.ltr,
-          child: Column(
-            children: [
-              Builder(
-                builder: (c) {
-                  ctx1 = c;
-                  return const SizedBox();
-                },
-              ),
-              Builder(
-                builder: (c) {
-                  ctx2 = c;
-                  return const SizedBox();
-                },
-              ),
-            ],
+        await tester.pumpWidget(
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: Column(
+              children: [
+                Builder(
+                  builder: (c) {
+                    ctx1 = c;
+                    return const SizedBox();
+                  },
+                ),
+                Builder(
+                  builder: (c) {
+                    ctx2 = c;
+                    return const SizedBox();
+                  },
+                ),
+              ],
+            ),
           ),
-        ),
-      );
+        );
 
-      // First lock is fine.
-      expect(delegate.debugLockDelegate(ctx1), isTrue);
+        // First lock is fine.
+        expect(delegate.debugLockDelegate(ctx1), isTrue);
 
-      // Locking again with the SAME context is allowed.
-      expect(delegate.debugLockDelegate(ctx1), isTrue);
+        // Locking again with the SAME context is allowed.
+        expect(delegate.debugLockDelegate(ctx1), isTrue);
 
-      // Locking with a DIFFERENT context should assert-fail (in debug/tests).
-      expect(() => delegate.debugLockDelegate(ctx2), throwsAssertionError);
+        // Locking with a DIFFERENT context should assert-fail (in debug/tests).
+        expect(() => delegate.debugLockDelegate(ctx2), throwsAssertionError);
 
-      // Unlock from the original context is allowed.
-      expect(delegate.debugUnlockDelegate(ctx1), isTrue);
+        // Unlock from the original context is allowed.
+        expect(delegate.debugUnlockDelegate(ctx1), isTrue);
 
-      // Unlock from a different context should assert-fail if still locked.
-      // Re-lock to test that branch:
-      delegate.debugLockDelegate(ctx1);
-      expect(() => delegate.debugUnlockDelegate(ctx2), throwsAssertionError);
+        // Unlock from a different context should assert-fail if still locked.
+        // Re-lock to test that branch:
+        delegate.debugLockDelegate(ctx1);
+        expect(() => delegate.debugUnlockDelegate(ctx2), throwsAssertionError);
 
-      // Proper unlock
-      expect(delegate.debugUnlockDelegate(ctx1), isTrue);
-    });
+        // Proper unlock
+        expect(delegate.debugUnlockDelegate(ctx1), isTrue);
+      },
+    );
   });
 }

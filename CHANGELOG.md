@@ -1,3 +1,4 @@
-## 0.0.1
-
-* TODO: Describe initial release.
+## 0.1.0
+- Initial release
+- Adds EnhancedPlatformMenu which brings support for checked menu items and icons
+- Supports macOS and iPadOS

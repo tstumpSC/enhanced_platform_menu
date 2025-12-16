@@ -20,37 +20,48 @@ class _MockDelegate extends PlatformMenuDelegate {
 
 void main() {
   group('EnhancedPlatformMenu', () {
-    test('standard() constructs with identifier, label, menus and equality works', () {
-      final itemA = EnhancedPlatformMenuItem(label: 'Open');
-      final itemB = EnhancedPlatformMenuItem(label: 'Close');
-      final m1 = EnhancedPlatformMenu.standard(
-        identifier: StandardMenuIdentifier.file,
-        label: 'File',
-        menus: [itemA, itemB],
-        removeDefaultItems: true,
-      );
-      final m2 = EnhancedPlatformMenu.standard(
-        identifier: StandardMenuIdentifier.file,
-        label: 'File',
-        menus: [itemA, itemB],
-        removeDefaultItems: true,
-      );
+    test(
+      'standard() constructs with identifier, label, menus and equality works',
+      () {
+        final itemA = EnhancedPlatformMenuItem(label: 'Open');
+        final itemB = EnhancedPlatformMenuItem(label: 'Close');
+        final m1 = EnhancedPlatformMenu.standard(
+          identifier: StandardMenuIdentifier.file,
+          label: 'File',
+          menus: [itemA, itemB],
+          removeDefaultItems: true,
+        );
+        final m2 = EnhancedPlatformMenu.standard(
+          identifier: StandardMenuIdentifier.file,
+          label: 'File',
+          menus: [itemA, itemB],
+          removeDefaultItems: true,
+        );
 
-      expect(m1.identifier, StandardMenuIdentifier.file);
-      expect(m1.menus, [itemA, itemB]);
-      expect(m1.removeDefaultItems, isTrue);
+        expect(m1.identifier, StandardMenuIdentifier.file);
+        expect(m1.menus, [itemA, itemB]);
+        expect(m1.removeDefaultItems, isTrue);
 
-      // equality/hashCode (menus list equality)
-      expect(m1, equals(m2));
-      expect(m1.hashCode, equals(m2.hashCode));
-    });
+        // equality/hashCode (menus list equality)
+        expect(m1, equals(m2));
+        expect(m1.hashCode, equals(m2.hashCode));
+      },
+    );
 
     test('custom() constructs with icon and participates in equality/hash', () {
       final item = EnhancedPlatformMenuItem(label: 'Prefs');
       const icon = AssetIcon('assets/gear.png', isMonochrome: false);
 
-      final m1 = EnhancedPlatformMenu.custom(label: 'Settings', menus: [item], icon: icon);
-      final m2 = EnhancedPlatformMenu.custom(label: 'Settings', menus: [item], icon: icon);
+      final m1 = EnhancedPlatformMenu.custom(
+        label: 'Settings',
+        menus: [item],
+        icon: icon,
+      );
+      final m2 = EnhancedPlatformMenu.custom(
+        label: 'Settings',
+        menus: [item],
+        icon: icon,
+      );
       final m3 = EnhancedPlatformMenu.custom(
         label: 'Settings',
         menus: [item],
@@ -69,41 +80,63 @@ void main() {
       const i1 = SFSymbolIcon('bolt');
       const i2 = SFSymbolIcon('bolt');
 
-      final a = EnhancedPlatformMenuItem(label: 'Do', shortcut: s, checked: true, icon: i1);
-      final b = EnhancedPlatformMenuItem(label: 'Do', shortcut: s, checked: true, icon: i2);
-      final c = EnhancedPlatformMenuItem(label: 'Do', shortcut: s, checked: false, icon: i1);
+      final a = EnhancedPlatformMenuItem(
+        label: 'Do',
+        shortcut: s,
+        checked: true,
+        icon: i1,
+      );
+      final b = EnhancedPlatformMenuItem(
+        label: 'Do',
+        shortcut: s,
+        checked: true,
+        icon: i2,
+      );
+      final c = EnhancedPlatformMenuItem(
+        label: 'Do',
+        shortcut: s,
+        checked: false,
+        icon: i1,
+      );
 
       expect(a, equals(b));
       expect(a.hashCode, equals(b.hashCode));
       expect(a == c, isFalse);
     });
 
-    test('toChannelRepresentation emits checked flag, but no icon key (current impl)', () {
-      final delegate = _MockDelegate();
-      var nextId = 1;
-      int idGen(PlatformMenuItem _) => nextId++;
+    test(
+      'toChannelRepresentation emits checked flag, but no icon key (current impl)',
+      () {
+        final delegate = _MockDelegate();
+        var nextId = 1;
+        int idGen(PlatformMenuItem _) => nextId++;
 
-      final item = EnhancedPlatformMenuItem(
-        label: 'Toggle',
-        checked: true,
-        icon: const AssetIcon('assets/check.png'), // currently not serialized into map
-      );
+        final item = EnhancedPlatformMenuItem(
+          label: 'Toggle',
+          checked: true,
+          icon: const AssetIcon(
+            'assets/check.png',
+          ), // currently not serialized into map
+        );
 
-      final maps = item.toChannelRepresentation(delegate, getId: idGen).toList();
+        final maps =
+            item.toChannelRepresentation(delegate, getId: idGen).toList();
 
-      // There should be exactly one serialized entry for a simple item.
-      expect(maps.length, 1);
-      expect(maps.first['checked'], true);
-      // Assert current behavior: icon not added to map
-      expect(maps.first.containsKey('icon'), isFalse);
-    });
+        // There should be exactly one serialized entry for a simple item.
+        expect(maps.length, 1);
+        expect(maps.first['checked'], true);
+        // Assert current behavior: icon not added to map
+        expect(maps.first.containsKey('icon'), isFalse);
+      },
+    );
 
     test('toChannelRepresentation reflects checked=false', () {
       final delegate = _MockDelegate();
       int idGen(PlatformMenuItem _) => 1;
 
       final item = EnhancedPlatformMenuItem(label: 'Toggle', checked: false);
-      final maps = item.toChannelRepresentation(delegate, getId: idGen).toList();
+      final maps =
+          item.toChannelRepresentation(delegate, getId: idGen).toList();
       expect(maps.first['checked'], false);
     });
   });

@@ -48,10 +48,7 @@ void main() {
       const mono = AssetIcon('assets/m.png'); // default true
       const color = AssetIcon('assets/c.png', isMonochrome: false);
 
-      expect(mono.serialize(), {
-        'asset': 'assets/m.png',
-        'isMonochrome': true,
-      });
+      expect(mono.serialize(), {'asset': 'assets/m.png', 'isMonochrome': true});
       expect(color.serialize(), {
         'asset': 'assets/c.png',
         'isMonochrome': false,
@@ -80,7 +77,10 @@ void main() {
   group('Polymorphic serialize', () {
     test('switch in serialize produces correct shape per subtype', () {
       const i1 = EnhancedPlatformMenuIcon.sfSymbol('tray');
-      const i2 = EnhancedPlatformMenuIcon.asset('assets/tray.png', isMonochrome: false);
+      const i2 = EnhancedPlatformMenuIcon.asset(
+        'assets/tray.png',
+        isMonochrome: false,
+      );
 
       final s1 = i1.serialize();
       final s2 = i2.serialize();

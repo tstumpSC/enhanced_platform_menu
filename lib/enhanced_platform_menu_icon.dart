@@ -22,12 +22,18 @@ sealed class EnhancedPlatformMenuIcon {
 
   const factory EnhancedPlatformMenuIcon.sfSymbol(String name) = SFSymbolIcon;
 
-  const factory EnhancedPlatformMenuIcon.asset(String path, {bool isMonochrome}) = AssetIcon;
+  const factory EnhancedPlatformMenuIcon.asset(
+    String path, {
+    bool isMonochrome,
+  }) = AssetIcon;
 
   Map<String, dynamic> serialize() {
     return switch (this) {
       SFSymbolIcon(name: final n) => {'symbol': n},
-      AssetIcon(:final path, :final isMonochrome) => {'asset': path, 'isMonochrome': isMonochrome},
+      AssetIcon(:final path, :final isMonochrome) => {
+        'asset': path,
+        'isMonochrome': isMonochrome,
+      },
     };
   }
 }
@@ -39,8 +45,7 @@ class SFSymbolIcon extends EnhancedPlatformMenuIcon {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-          other is SFSymbolIcon && other.name == name;
+      identical(this, other) || other is SFSymbolIcon && other.name == name;
 
   @override
   int get hashCode => name.hashCode;
@@ -55,9 +60,9 @@ class AssetIcon extends EnhancedPlatformMenuIcon {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-          other is AssetIcon &&
-              other.path == path &&
-              other.isMonochrome == isMonochrome;
+      other is AssetIcon &&
+          other.path == path &&
+          other.isMonochrome == isMonochrome;
 
   @override
   int get hashCode => Object.hash(path, isMonochrome);

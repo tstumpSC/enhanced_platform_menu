@@ -69,7 +69,9 @@ class EnhancedPlatformMenu extends PlatformMenuItem {
     required List<PlatformMenuItem> menus,
     bool removeDefaultItems = false,
   }) {
-    assert(!(Platform.isMacOS && label == null)); // You need to provide your own label on macOS
+    assert(
+      !(Platform.isMacOS && label == null),
+    ); // You need to provide your own label on macOS
 
     return EnhancedPlatformMenu._(
       label: label ?? "",
@@ -96,8 +98,13 @@ class EnhancedPlatformMenu extends PlatformMenuItem {
           listEquals(other.menus, menus);
 
   @override
-  int get hashCode =>
-      Object.hash(label, identifier, removeDefaultItems, icon, Object.hashAll(menus));
+  int get hashCode => Object.hash(
+    label,
+    identifier,
+    removeDefaultItems,
+    icon,
+    Object.hashAll(menus),
+  );
 }
 
 enum StandardMenuIdentifier {
@@ -147,7 +154,8 @@ class EnhancedPlatformMenuItem extends PlatformMenuItem {
           other.onSelectedIntent == onSelectedIntent;
 
   @override
-  int get hashCode => Object.hash(label, shortcut, checked, icon, onSelectedIntent);
+  int get hashCode =>
+      Object.hash(label, shortcut, checked, icon, onSelectedIntent);
 }
 
 class EnhancedPlatformMenuItemGroup extends PlatformMenuItemGroup {
@@ -156,7 +164,8 @@ class EnhancedPlatformMenuItemGroup extends PlatformMenuItemGroup {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is EnhancedPlatformMenuItemGroup && listEquals(other.members, members);
+      other is EnhancedPlatformMenuItemGroup &&
+          listEquals(other.members, members);
 
   @override
   int get hashCode => Object.hashAll(members);

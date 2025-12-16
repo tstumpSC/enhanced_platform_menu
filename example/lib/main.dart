@@ -118,8 +118,10 @@ class _ExampleAppState extends State<ExampleApp> {
         );
       },
       // minimal routing so WidgetsApp compiles
-      onGenerateRoute: (settings) =>
-          PageRouteBuilder<void>(pageBuilder: (context, _, _) => const SizedBox.shrink()),
+      onGenerateRoute:
+          (settings) => PageRouteBuilder<void>(
+            pageBuilder: (context, _, _) => const SizedBox.shrink(),
+          ),
       locale: Locale("en"),
     );
   }
@@ -133,7 +135,10 @@ class _ExampleAppState extends State<ExampleApp> {
             label: "Item with checked state, shortcut and icon",
             onSelectedIntent: const ToggleFlagIntent(),
             icon: SFSymbolIcon(SFSymbols.ac),
-            shortcut: const SingleActivator(LogicalKeyboardKey.keyQ, shift: true),
+            shortcut: const SingleActivator(
+              LogicalKeyboardKey.keyQ,
+              shift: true,
+            ),
             checked: _flag.value,
           ),
         ],
@@ -143,29 +148,24 @@ class _ExampleAppState extends State<ExampleApp> {
           PlatformMenu(
             label: "Nested menu regular",
             menus: [
-              EnhancedPlatformMenuItem(
-                label: "Nested menu item",
-              ),
-              EnhancedPlatformMenuItem(
-                label: "Nested menu item 2",
-              ),
+              EnhancedPlatformMenuItem(label: "Nested menu item"),
+              EnhancedPlatformMenuItem(label: "Nested menu item 2"),
             ],
           ),
           EnhancedPlatformMenu.custom(
             label: "Nested menu enhanced",
             icon: SFSymbolIcon(SFSymbols.sfs_1_magnifyingglass),
             menus: [
-              EnhancedPlatformMenuItem(
-                label: "Nested menu item",
-              ),
-              EnhancedPlatformMenuItem(
-                label: "Nested menu item 2",
-              ),
+              EnhancedPlatformMenuItem(label: "Nested menu item"),
+              EnhancedPlatformMenuItem(label: "Nested menu item 2"),
             ],
           ),
           PlatformMenuItem(
             label: 'Regular item',
-            shortcut: const SingleActivator(LogicalKeyboardKey.keyW, meta: true),
+            shortcut: const SingleActivator(
+              LogicalKeyboardKey.keyW,
+              meta: true,
+            ),
             onSelectedIntent: const CloseWindowIntent(),
           ),
         ],
@@ -209,10 +209,16 @@ class _ExampleAppState extends State<ExampleApp> {
       menus: [
         PlatformMenuItemGroup(
           members: [
-            PlatformMenuItem(label: 'About Example', onSelectedIntent: const AboutIntent()),
+            PlatformMenuItem(
+              label: 'About Example',
+              onSelectedIntent: const AboutIntent(),
+            ),
             PlatformMenuItem(
               label: 'Preferences…',
-              shortcut: const SingleActivator(LogicalKeyboardKey.accel, meta: true),
+              shortcut: const SingleActivator(
+                LogicalKeyboardKey.accel,
+                meta: true,
+              ),
               onSelectedIntent: const PreferencesIntent(),
             ),
           ],
@@ -229,7 +235,10 @@ class _ExampleAppState extends State<ExampleApp> {
       removeDefaultItems: true,
       label: "Window",
       menus: [
-        PlatformMenuItem(label: "Additional window item", onSelectedIntent: PreferencesIntent()),
+        PlatformMenuItem(
+          label: "Additional window item",
+          onSelectedIntent: PreferencesIntent(),
+        ),
       ],
     ),
     EnhancedPlatformMenu.standard(
@@ -237,7 +246,10 @@ class _ExampleAppState extends State<ExampleApp> {
       removeDefaultItems: false,
       label: "Format",
       menus: [
-        PlatformMenuItem(label: "Additional window item", onSelectedIntent: PreferencesIntent()),
+        PlatformMenuItem(
+          label: "Additional window item",
+          onSelectedIntent: PreferencesIntent(),
+        ),
       ],
     ),
     EnhancedPlatformMenu.standard(

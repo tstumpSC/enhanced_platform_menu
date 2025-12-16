@@ -72,7 +72,8 @@ class EnhancedPlatformMenuDelegate extends PlatformMenuDelegate {
   }
 
   @override
-  Future<void> clearMenus() async => await _channel.invokeMethod<void>('Menu.Clear');
+  Future<void> clearMenus() async =>
+      await _channel.invokeMethod<void>('Menu.Clear');
 
   @override
   bool debugLockDelegate(BuildContext context) {
@@ -104,11 +105,12 @@ class EnhancedPlatformMenuDelegate extends PlatformMenuDelegate {
 
   Map<String, Object?> _serializeItem(PlatformMenuItem item) {
     if (item is PlatformMenu || item is EnhancedPlatformMenu) {
-      final menus = item is PlatformMenu
-          ? item.menus
-          : item is EnhancedPlatformMenu
-          ? item.menus
-          : [];
+      final menus =
+          item is PlatformMenu
+              ? item.menus
+              : item is EnhancedPlatformMenu
+              ? item.menus
+              : [];
 
       final children = <Map<String, Object?>>[];
       for (var i = 0; i < menus.length; i++) {
@@ -130,8 +132,10 @@ class EnhancedPlatformMenuDelegate extends PlatformMenuDelegate {
         'label': item.label,
         'children': children,
         if (item is EnhancedPlatformMenu) 'identifier': item.identifier?.name,
-        if (item is EnhancedPlatformMenu) 'removeDefaults': item.removeDefaultItems,
-        if (item is EnhancedPlatformMenu && item.icon != null) ...item.icon!.serialize(),
+        if (item is EnhancedPlatformMenu)
+          'removeDefaults': item.removeDefaultItems,
+        if (item is EnhancedPlatformMenu && item.icon != null)
+          ...item.icon!.serialize(),
       };
     }
 
@@ -140,10 +144,14 @@ class EnhancedPlatformMenuDelegate extends PlatformMenuDelegate {
 
     _callbacks[id] = () {
       final intent = item.onSelectedIntent;
-      final context = FocusManager.instance.primaryFocus?.context ?? _lockedContext;
+      final context =
+          FocusManager.instance.primaryFocus?.context ?? _lockedContext;
 
       if (intent != null && context != null) {
-        final Action<Intent> action = Actions.find<Intent>(context, intent: intent);
+        final Action<Intent> action = Actions.find<Intent>(
+          context,
+          intent: intent,
+        );
         if (action.isEnabled(intent)) {
           Actions.invoke(context, intent);
           return;
@@ -159,7 +167,8 @@ class EnhancedPlatformMenuDelegate extends PlatformMenuDelegate {
       'enabled': enabled,
       if (item.shortcut != null) 'shortcut': _shortcutToMap(item.shortcut),
       if (item is EnhancedPlatformMenuItem) 'checked': item.checked,
-      if (item is EnhancedPlatformMenuItem && item.icon != null) ...item.icon!.serialize(),
+      if (item is EnhancedPlatformMenuItem && item.icon != null)
+        ...item.icon!.serialize(),
     };
   }
 
@@ -184,7 +193,10 @@ class EnhancedPlatformMenuDelegate extends PlatformMenuDelegate {
     void walk(List<PlatformMenuItem> items, String path) {
       for (final item in items) {
         if (item is PlatformMenu || item is EnhancedPlatformMenu) {
-          final menus = item is PlatformMenu ? item.menus : (item as EnhancedPlatformMenu).menus;
+          final menus =
+              item is PlatformMenu
+                  ? item.menus
+                  : (item as EnhancedPlatformMenu).menus;
           walk(menus, '$path/${item.label}');
           continue;
         }
@@ -208,7 +220,7 @@ class EnhancedPlatformMenuDelegate extends PlatformMenuDelegate {
             ErrorDescription('Second: $here'),
             ErrorHint(
               'Give each shortcut a unique key combo, or remove one of them. '
-                  'If you intentionally want duplicates, add a whitelist mechanism.',
+              'If you intentionally want duplicates, add a whitelist mechanism.',
             ),
           ]);
         }
@@ -225,10 +237,10 @@ class EnhancedPlatformMenuDelegate extends PlatformMenuDelegate {
       final triggerId = shortcut.trigger.keyId;
 
       final mods =
-      (shortcut.meta ? 1 : 0) |
-      (shortcut.control ? 2 : 0) |
-      (shortcut.alt ? 4 : 0) |
-      (shortcut.shift ? 8 : 0);
+          (shortcut.meta ? 1 : 0) |
+          (shortcut.control ? 2 : 0) |
+          (shortcut.alt ? 4 : 0) |
+          (shortcut.shift ? 8 : 0);
 
       return 'single:$mods:$triggerId';
     }
@@ -236,9 +248,9 @@ class EnhancedPlatformMenuDelegate extends PlatformMenuDelegate {
     if (shortcut is CharacterActivator) {
       final ch = shortcut.character;
       final mods =
-      (shortcut.meta ? 1 : 0) |
-      (shortcut.control ? 2 : 0) |
-      (shortcut.alt ? 4 : 0);
+          (shortcut.meta ? 1 : 0) |
+          (shortcut.control ? 2 : 0) |
+          (shortcut.alt ? 4 : 0);
 
       return 'char:$mods:${ch.codeUnits.join(",")}';
     }
