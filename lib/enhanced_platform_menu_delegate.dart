@@ -105,12 +105,11 @@ class EnhancedPlatformMenuDelegate extends PlatformMenuDelegate {
 
   Map<String, Object?> _serializeItem(PlatformMenuItem item) {
     if (item is PlatformMenu || item is EnhancedPlatformMenu) {
-      final menus =
-          item is PlatformMenu
-              ? item.menus
-              : item is EnhancedPlatformMenu
-              ? item.menus
-              : [];
+      final menus = item is PlatformMenu
+          ? item.menus
+          : item is EnhancedPlatformMenu
+          ? item.menus
+          : [];
 
       final children = <Map<String, Object?>>[];
       for (var i = 0; i < menus.length; i++) {
@@ -193,10 +192,9 @@ class EnhancedPlatformMenuDelegate extends PlatformMenuDelegate {
     void walk(List<PlatformMenuItem> items, String path) {
       for (final item in items) {
         if (item is PlatformMenu || item is EnhancedPlatformMenu) {
-          final menus =
-              item is PlatformMenu
-                  ? item.menus
-                  : (item as EnhancedPlatformMenu).menus;
+          final menus = item is PlatformMenu
+              ? item.menus
+              : (item as EnhancedPlatformMenu).menus;
           walk(menus, '$path/${item.label}');
           continue;
         }

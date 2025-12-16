@@ -118,10 +118,9 @@ class _ExampleAppState extends State<ExampleApp> {
         );
       },
       // minimal routing so WidgetsApp compiles
-      onGenerateRoute:
-          (settings) => PageRouteBuilder<void>(
-            pageBuilder: (context, _, _) => const SizedBox.shrink(),
-          ),
+      onGenerateRoute: (settings) => PageRouteBuilder<void>(
+        pageBuilder: (context, _, _) => const SizedBox.shrink(),
+      ),
       locale: Locale("en"),
     );
   }

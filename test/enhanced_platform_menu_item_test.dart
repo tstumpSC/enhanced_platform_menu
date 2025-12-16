@@ -119,8 +119,9 @@ void main() {
           ), // currently not serialized into map
         );
 
-        final maps =
-            item.toChannelRepresentation(delegate, getId: idGen).toList();
+        final maps = item
+            .toChannelRepresentation(delegate, getId: idGen)
+            .toList();
 
         // There should be exactly one serialized entry for a simple item.
         expect(maps.length, 1);
@@ -135,8 +136,9 @@ void main() {
       int idGen(PlatformMenuItem _) => 1;
 
       final item = EnhancedPlatformMenuItem(label: 'Toggle', checked: false);
-      final maps =
-          item.toChannelRepresentation(delegate, getId: idGen).toList();
+      final maps = item
+          .toChannelRepresentation(delegate, getId: idGen)
+          .toList();
       expect(maps.first['checked'], false);
     });
   });
