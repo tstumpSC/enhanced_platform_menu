@@ -1,7 +1,7 @@
 name: enhanced_platform_menu
 description: "An enhanced drop-in replacement for Flutter’s Platform Menu API
   with support for checked items and icons on macOS and iPadOS."
-version: 0.1.0
+version: 0.1.2
 homepage: https://github.com/tstumpSC/enhanced_platform_menu
 issue_tracker: https://github.com/tstumpSC/enhanced_platform_menu/issues
 repository: https://github.com/tstumpSC/enhanced_platform_menu

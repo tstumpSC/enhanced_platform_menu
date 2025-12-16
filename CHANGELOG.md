@@ -1,3 +1,6 @@
+## 0.1.2
+- Fixed typos in README
+
 ## 0.1.1
 - Fixed formatting issues
 

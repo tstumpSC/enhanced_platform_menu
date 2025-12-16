@@ -38,7 +38,7 @@ cleanly with `PlatformMenu`, `Actions`, and keyboard shortcuts.
 
 ```yaml
 dependencies:
-  enhanced_platform_menu: ^0.1.0
+  enhanced_platform_menu: ^0.1.2
 ```
 
 ---
@@ -140,7 +140,7 @@ Supported formats:
 
 ## Standard top-level menus
 
-Use the `.standard constructor to insert (or add additional items to) one of the system's default menus:
+Use the `.standard` constructor to insert (or add additional items to) one of the system's default menus:
 ```dart
 final editMenu = EnhancedPlatformMenu.standard(
   identifier: StandardMenuIdentifier.file,
@@ -174,7 +174,7 @@ You can set `removeDefaultItems` to `true` in order to try to have them removed 
 However, it is not guaranteed that this will work with every default menu item.
 
 ## Custom top-level menus
-Use the `.custom constructor to insert a custom menu:
+Use the `.custom` constructor to insert a custom menu:
 
 ```dart
 final customMenu = EnhancedPlatformMenu.custom(
