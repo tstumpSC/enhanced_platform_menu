@@ -95,8 +95,8 @@ void main() {
         expect(std['removeDefaults'], true);
 
         final children = (std['children'] as List).cast<Map>();
-        // Expected: GroupItem1 leaf, GroupItem2 leaf, separator, LeafC leaf
-        expect(children.length, 4);
+        // Expected: Leading Separator, GroupItem1 leaf, GroupItem2 leaf, separator, LeafC leaf
+        expect(children.length, 5);
 
         expect(children[0]['kind'], 'leaf');
         expect(children[0]['label'], 'GroupItem1');

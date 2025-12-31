@@ -105,7 +105,11 @@ class _ExampleAppState extends State<ExampleApp> {
           valueListenable: _flag,
           builder: (_, value, _) {
             return PlatformMenuBar(
-              menus: [_customMenu, _platformProvidedMenuItems, ..._standardMenus],
+              menus: [
+                _customMenu,
+                _platformProvidedMenuItems,
+                ..._standardMenus,
+              ],
               child: Center(
                 child: Text(
                   'Hello desktop/iPadOS!\nFlag is ${value ? 'ON' : 'OFF'}',
@@ -172,19 +176,20 @@ class _ExampleAppState extends State<ExampleApp> {
     ],
   );
 
-  EnhancedPlatformMenu get _platformProvidedMenuItems => EnhancedPlatformMenu.custom(
-    label: "Platform provided menus",
-    menus: PlatformProvidedMenuItemType.values
-        .map(
-          (e) =>
-              PlatformProvidedMenuItem.hasMenu(e) &&
-                  e != PlatformProvidedMenuItemType.servicesSubmenu
-              ? PlatformProvidedMenuItem(type: e)
-              : null,
-        )
-        .nonNulls
-        .toList(),
-  );
+  EnhancedPlatformMenu get _platformProvidedMenuItems =>
+      EnhancedPlatformMenu.custom(
+        label: "Platform provided menus",
+        menus: PlatformProvidedMenuItemType.values
+            .map(
+              (e) =>
+                  PlatformProvidedMenuItem.hasMenu(e) &&
+                      e != PlatformProvidedMenuItemType.servicesSubmenu
+                  ? PlatformProvidedMenuItem(type: e)
+                  : null,
+            )
+            .nonNulls
+            .toList(),
+      );
 
   List<EnhancedPlatformMenu> get _standardMenus => [
     EnhancedPlatformMenu.standard(
