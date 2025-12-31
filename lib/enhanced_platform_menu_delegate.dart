@@ -111,7 +111,7 @@ class EnhancedPlatformMenuDelegate extends PlatformMenuDelegate {
           ? item.menus
           : [];
 
-      final children = <Map<String, Object?>>[];
+      final children = <Map<String, Object?>>[{'kind': 'separator'}];
       for (var i = 0; i < menus.length; i++) {
         final child = menus[i];
 
