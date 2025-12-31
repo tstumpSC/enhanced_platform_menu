@@ -138,6 +138,14 @@ class EnhancedPlatformMenuDelegate extends PlatformMenuDelegate {
       };
     }
 
+    if (item is PlatformProvidedMenuItem) {
+      assert(
+        item.type != PlatformProvidedMenuItemType.servicesSubmenu,
+        'PlatformProvidedMenuItemType.servicesMenu is not supported by EnhancedPlatformMenu. Use EnhancedPlatformMenu.standard(identifier: StandardMenuIdentifier.services) instead.',
+      );
+      return {'kind': 'provided', 'type': item.type.name};
+    }
+
     final id = UniqueKey().toString();
     final enabled = item.onSelectedIntent != null || item.onSelected != null;
 

@@ -5,16 +5,31 @@ public class EnhancedPlatformMenuPlugin: NSObject, FlutterPlugin {
     private var channel: FlutterMethodChannel!
     private var cachedMenus: [[String: Any]] = []
     private static var registrar: FlutterPluginRegistrar?
+
     private var didSetServicesMenu = false
-    
+
+    private let providedStore = ProvidedMenuItemStore()
+
+    /// The template menu as loaded by the Runner (MainMenu.xib).
+    /// We snapshot provided items from this menu once.
+    private var originalMainMenu: NSMenu?
+
+    private var didScheduleInitialSnapshot = false
+
     public static func register(with registrar: FlutterPluginRegistrar) {
         EnhancedPlatformMenuPlugin.registrar = registrar
         
         let channel = FlutterMethodChannel(name: "enhanced_platform_menu", binaryMessenger: registrar.messenger)
         let instance = EnhancedPlatformMenuPlugin(channel: channel)
         registrar.addMethodCallDelegate(instance, channel: channel)
+
+        // Capture/snapshot from the template menu on the next tick (when the nib is typically loaded).
+        DispatchQueue.main.async { [weak instance] in
+            guard let instance else { return }
+            instance.captureAndSnapshotOriginalMenuIfPossible()
+        }
     }
-    
+
     private init(channel: FlutterMethodChannel) {
         self.channel = channel
     }
@@ -27,33 +42,76 @@ public class EnhancedPlatformMenuPlugin: NSObject, FlutterPlugin {
                 result(FlutterError(code: "bad_args", message: "menus missing", details: nil))
                 return
             }
-            
+
             Task { @MainActor in
+                // Ensure we have the template snapshot before we start using provided items.
+                // This is cheap (idempotent) and removes any need for waiting.
+                self.captureAndSnapshotOriginalMenuIfPossible()
                 self.rebuildMainMenu(items: items)
                 result(nil)
             }
-            
+
         case "Menu.Clear":
             Task { @MainActor in
                 self.clearMainMenu()
                 result(nil)
             }
-            
+
         default:
             result(FlutterMethodNotImplemented)
         }
     }
-    
+
+    /// Captures the original main menu (Runner template) and snapshots provided items from it once.
+    /// Safe to call repeatedly.
+    @MainActor
+    private func captureAndSnapshotOriginalMenuIfPossible() {
+        // If we already have a snapshot, nothing to do.
+        if providedStore.hasSnapshot { return }
+
+        // If we haven't captured original menu yet, try now.
+        if originalMainMenu == nil {
+            originalMainMenu = NSApp.mainMenu
+        }
+
+        guard let template = originalMainMenu, !template.items.isEmpty else {
+            // The template menu isn't ready yet. Schedule one more attempt (once).
+            scheduleInitialSnapshotRetryIfNeeded()
+            return
+        }
+
+        // Snapshot from the template menu (NOT from NSApp.mainMenu, which you might replace later).
+        providedStore.snapshot(from: template)
+    }
+
+    @MainActor
+    private func scheduleInitialSnapshotRetryIfNeeded() {
+        guard !didScheduleInitialSnapshot else { return }
+        didScheduleInitialSnapshot = true
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+            guard let self else { return }
+            Task { @MainActor in
+                self.didScheduleInitialSnapshot = false
+                self.captureAndSnapshotOriginalMenuIfPossible()
+            }
+        }
+    }
+
     @MainActor private func clearMainMenu() {
-        NSApplication.shared.mainMenu = NSMenu()
+        // Restore the Runner template menu if we have it.
+        if let originalMainMenu {
+            NSApp.mainMenu = originalMainMenu
+        }
+
         NSApp.servicesMenu = nil
         NSApp.windowsMenu = nil
         NSApp.helpMenu = nil
     }
-    
+
     @MainActor private func rebuildMainMenu(items: [[String: Any]]) {
         cachedMenus = items
-        
+
         // 1) Stable sort into the desired order, customs between View and Services.
         let rank: [String: Int] = [
             "application": 0,
@@ -67,8 +125,7 @@ public class EnhancedPlatformMenuPlugin: NSObject, FlutterPlugin {
             "help":        8,
         ]
         let CUSTOM_BUCKET = 5
-        
-        // tag each with (rank, originalIndex) to keep order stable within buckets
+
         let sortedTop: [[String: Any]] = items.enumerated()
             .map { (idx, map) -> (Int, Int, [String: Any]) in
                 let id = map["identifier"] as? String
@@ -80,20 +137,18 @@ public class EnhancedPlatformMenuPlugin: NSObject, FlutterPlugin {
                 return a.1 < b.1
             }
             .map { $0.2 }
-        
+
         let main = NSMenu(title: "Main")
-        main.autoenablesItems = false
-        
         // Clear role pointers; we’ll re-assign below.
         didSetServicesMenu = false
         NSApp.servicesMenu = nil
         NSApp.windowsMenu = nil
         NSApp.helpMenu = nil
-        
+
         for map in sortedTop {
             guard let mi = makeMenuItem(from: map) else { continue }
             main.addItem(mi)
-            
+
             if let identifier = map["identifier"] as? String, let sub = mi.submenu {
                 switch identifier {
                 case "services":
@@ -107,23 +162,28 @@ public class EnhancedPlatformMenuPlugin: NSObject, FlutterPlugin {
                 }
             }
         }
-        
+
+        // Safety: don’t install an empty menu.
+        guard !main.items.isEmpty else {
+            print("🚫 Not installing empty menu.")
+            return
+        }
+
         NSApp.mainMenu = main
     }
-    
+
     @MainActor private func makeMenuItem(from map: [String: Any]) -> NSMenuItem? {
         guard let kind = map["kind"] as? String else { return nil }
-        
+
         switch kind {
         case "separator":
             return NSMenuItem.separator()
-            
+
         case "menu":
             let title = (map["label"] as? String) ?? ""
             let parent = NSMenuItem(title: title, action: nil, keyEquivalent: "")
             let submenu = NSMenu(title: title)
-            submenu.autoenablesItems = false
-            
+
             // If this submenu is the Services submenu, wire it — even when nested.
             if let ident = map["identifier"] as? String, ident == "services", !didSetServicesMenu {
                 NSApp.servicesMenu = submenu
@@ -147,16 +207,24 @@ public class EnhancedPlatformMenuPlugin: NSObject, FlutterPlugin {
                     }
                 }
             }
-            
+
             if let children = map["children"] as? [[String: Any]] {
                 for child in children {
                     if let c = makeMenuItem(from: child) { submenu.addItem(c) }
                 }
             }
-            
+
             parent.submenu = submenu
             return parent
-            
+
+        case "provided":
+            // Ensure snapshot exists before use (idempotent).
+            captureAndSnapshotOriginalMenuIfPossible()
+
+            let typeString = map["type"] as? String ?? ""
+            let item = providedStore.menuItem(for: typeString)
+            return item
+
         case "leaf":
             let title = (map["label"] as? String) ?? ""
             let id = (map["id"] as? String) ?? UUID().uuidString
@@ -185,17 +253,17 @@ public class EnhancedPlatformMenuPlugin: NSObject, FlutterPlugin {
                 }
             }
             return item
-            
+
         default:
             return nil
         }
     }
-    
+
     @objc private func onSelect(_ sender: Any?) {
         guard let id = (sender as? NSMenuItem)?.representedObject as? String else { return }
         channel.invokeMethod("Menu.Selected", arguments: ["id": id])
     }
-    
+
     @MainActor private func applyShortcut(_ s: [String: Any], to item: NSMenuItem) {
         if let trig = s["shortcutTrigger"] as? NSNumber,
            let scalar = UnicodeScalar(trig.intValue),
@@ -222,23 +290,23 @@ public class EnhancedPlatformMenuPlugin: NSObject, FlutterPlugin {
         }
         item.keyEquivalentModifierMask = mods
     }
-    
+
     private let imageCache = NSCache<NSString, NSImage>()
-    
+
     private func aspectFit(_ size: NSSize, max: CGFloat) -> NSSize {
         guard size.width > 0, size.height > 0 else { return NSSize(width: max, height: max) }
         let s = min(max / size.width, max / size.height)
         return NSSize(width: round(size.width * s), height: round(size.height * s))
     }
-    
+
     private func nsImageFromFlutterAsset(_ assetPath: String,
                                          template: Bool = true
     ) -> NSImage? {
         guard let path = resolveFlutterAssetPath(assetPath) else { return nil }
-        
+
         let cacheKey = "\(path)|tpl:\(template)" as NSString
         if let cached = imageCache.object(forKey: cacheKey) { return cached }
-        
+
         let ext = (path as NSString).pathExtension.lowercased()
         let base: NSImage? = {
             switch ext {
@@ -256,24 +324,24 @@ public class EnhancedPlatformMenuPlugin: NSObject, FlutterPlugin {
                 return NSImage(contentsOfFile: path)
             }
         }()
-        
+
         guard let src = base else { return nil }
-        
+
         let copy = src.copy() as? NSImage ?? NSImage(size: src.size)
         if copy != src, copy.representations.isEmpty {
             copy.addRepresentations(src.representations)
         }
-        
+
         copy.size = aspectFit(copy.size, max: 17)
         copy.isTemplate = template
-        
+
         imageCache.setObject(copy, forKey: cacheKey)
         return copy
     }
-    
+
     private func resolveFlutterAssetPath(_ asset: String) -> String? {
         let fm = FileManager.default
-        
+
         // 1) Absolute path already?
         if asset.hasPrefix("/"), fm.fileExists(atPath: asset) {
             return asset
@@ -301,12 +369,12 @@ public class EnhancedPlatformMenuPlugin: NSObject, FlutterPlugin {
             let candidate = fa.appendingPathComponent(key).path
             if fm.fileExists(atPath: candidate) { return candidate }
         }
-        
+
         // 4) Fallback: sometimes Flutter also exposes resources directly to the bundle
         if let p = Bundle.main.path(forResource: key, ofType: nil), fm.fileExists(atPath: p) {
             return p
         }
-        
+
         NSLog("enhanced_platform_menu: asset not found (asset=%@, key=%@)", asset, key)
         return nil
     }
