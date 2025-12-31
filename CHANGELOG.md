@@ -1,3 +1,7 @@
+## 0.2.0
+- Added support for PlatformProvidedMenuItem
+- Fixed issue where separator between default and custom items was missing
+
 ## 0.1.2
 - Fixed typos in README
 
