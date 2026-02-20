@@ -1,7 +1,7 @@
 import Cocoa
 import FlutterMacOS
 
-public class EnhancedPlatformMenuPlugin: NSObject, FlutterPlugin {
+public class EnhancedPlatformMenuPlugin: NSObject, FlutterPlugin, NSMenuItemValidation {
     private var channel: FlutterMethodChannel!
     private var cachedMenus: [[String: Any]] = []
     private static var registrar: FlutterPluginRegistrar?
@@ -233,9 +233,14 @@ public class EnhancedPlatformMenuPlugin: NSObject, FlutterPlugin {
                                   action: #selector(onSelect(_:)),
                                   keyEquivalent: "")
             item.target = self
-            item.representedObject = id
-            
-            if let enabled = map["enabled"] as? Bool { item.isEnabled = enabled }
+
+            let enabled = (map["enabled"] as? Bool) ?? true
+            item.isEnabled = enabled
+            item.representedObject = [
+                "id": id,
+                "enabled": enabled,
+            ]
+
             if let checked = map["checked"] as? Bool { item.state = checked ? .on : .off }
             
             if let shortcut = map["shortcut"] as? [String: Any] { applyShortcut(shortcut, to: item) }
@@ -259,8 +264,17 @@ public class EnhancedPlatformMenuPlugin: NSObject, FlutterPlugin {
         }
     }
 
+    public func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        guard let payload = menuItem.representedObject as? [String: Any],
+              let enabled = payload["enabled"] as? Bool else {
+            return menuItem.isEnabled
+        }
+        return enabled
+    }
+
     @objc private func onSelect(_ sender: Any?) {
-        guard let id = (sender as? NSMenuItem)?.representedObject as? String else { return }
+        guard let payload = (sender as? NSMenuItem)?.representedObject as? [String: Any],
+              let id = payload["id"] as? String else { return }
         channel.invokeMethod("Menu.Selected", arguments: ["id": id])
     }
 
