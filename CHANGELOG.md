@@ -1,3 +1,6 @@
+## 0.2.1
+- Fixed issue where items would always be enabled (macOS only)
+
 ## 0.2.0
 - Added support for PlatformProvidedMenuItem
 - Fixed issue where separator between default and custom items was missing

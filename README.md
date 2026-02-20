@@ -38,7 +38,7 @@ cleanly with `PlatformMenu`, `Actions`, and keyboard shortcuts.
 
 ```yaml
 dependencies:
-  enhanced_platform_menu: ^0.2.0
+  enhanced_platform_menu: ^0.2.1
 ```
 
 ---
