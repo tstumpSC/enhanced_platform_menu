@@ -1,3 +1,6 @@
+## 0.2.2
+- Removed `dart:io` dependency so the package can be compiled for Web (no-op on Web — plugin still only functions on macOS/iPadOS)
+
 ## 0.2.1
 - Fixed issue where items would always be enabled (macOS only)
 

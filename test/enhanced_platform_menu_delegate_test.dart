@@ -98,21 +98,23 @@ void main() {
         // Expected: Leading Separator, GroupItem1 leaf, GroupItem2 leaf, separator, LeafC leaf
         expect(children.length, 5);
 
-        expect(children[0]['kind'], 'leaf');
-        expect(children[0]['label'], 'GroupItem1');
+        expect(children[0]['kind'], 'separator');
 
         expect(children[1]['kind'], 'leaf');
-        expect(children[1]['label'], 'GroupItem2');
+        expect(children[1]['label'], 'GroupItem1');
 
-        expect(children[2]['kind'], 'separator');
+        expect(children[2]['kind'], 'leaf');
+        expect(children[2]['label'], 'GroupItem2');
 
-        expect(children[3]['kind'], 'leaf');
-        expect(children[3]['label'], 'LeafC');
-        expect(children[3]['checked'], true);
+        expect(children[3]['kind'], 'separator');
+
+        expect(children[4]['kind'], 'leaf');
+        expect(children[4]['label'], 'LeafC');
+        expect(children[4]['checked'], true);
 
         // Shortcut shape (don’t over-constrain generics)
-        expect(children[3]['shortcut'], isA<Map>());
-        final shortcut = children[3]['shortcut'] as Map;
+        expect(children[4]['shortcut'], isA<Map>());
+        final shortcut = children[4]['shortcut'] as Map;
         expect(shortcut.containsKey('shortcutTrigger'), isTrue);
         expect(shortcut.containsKey('shortcutModifiers'), isTrue);
 

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'enhanced_platform_menu_icon.dart';
@@ -70,7 +68,9 @@ class EnhancedPlatformMenu extends PlatformMenuItem {
     bool removeDefaultItems = false,
   }) {
     assert(
-      !(Platform.isMacOS && label == null),
+      !(!kIsWeb &&
+          defaultTargetPlatform == TargetPlatform.macOS &&
+          label == null),
     ); // You need to provide your own label on macOS
 
     return EnhancedPlatformMenu._(
