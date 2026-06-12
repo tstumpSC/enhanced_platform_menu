@@ -1,3 +1,7 @@
+## 0.3.0
+- Added Swift Package Manager support for iOS and macOS (CocoaPods still supported)
+- **Breaking:** raised minimum Flutter to 3.41.0 (Dart SDK 3.11.0), required by Swift Package Manager
+
 ## 0.2.2
 - Removed `dart:io` dependency so the package can be compiled for Web (no-op on Web — plugin still only functions on macOS/iPadOS)
 

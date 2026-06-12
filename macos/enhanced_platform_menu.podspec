@@ -4,24 +4,18 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'enhanced_platform_menu'
-  s.version          = '0.0.1'
-  s.summary          = 'A new Flutter plugin project.'
+  s.version          = '0.3.0'
+  s.summary          = 'An enhanced drop-in replacement for Flutter’s Platform Menu API.'
   s.description      = <<-DESC
-A new Flutter plugin project.
+An enhanced drop-in replacement for Flutter’s Platform Menu API with support for
+checked items and icons on macOS and iPadOS.
                        DESC
-  s.homepage         = 'http://example.com'
+  s.homepage         = 'https://github.com/tstumpSC/enhanced_platform_menu'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
-
+  s.author           = { 'tstumpSC' => 'tim.stump@worksheetcrafter.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
-
-  # If your plugin requires a privacy manifest, for example if it collects user
-  # data, update the PrivacyInfo.xcprivacy file to describe your plugin's
-  # privacy impact, and then uncomment this line. For more information,
-  # see https://developer.apple.com/documentation/bundleresources/privacy_manifest_files
-  # s.resource_bundles = {'enhanced_platform_menu_privacy' => ['Resources/PrivacyInfo.xcprivacy']}
-
+  s.source_files = 'enhanced_platform_menu/Sources/enhanced_platform_menu/**/*.swift'
+  s.resource_bundles = {'enhanced_platform_menu_privacy' => ['enhanced_platform_menu/Sources/enhanced_platform_menu/PrivacyInfo.xcprivacy']}
   s.dependency 'FlutterMacOS'
 
   s.platform = :osx, '10.11'
