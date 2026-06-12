@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'enhanced_platform_menu'
-  s.version          = '0.3.0'
+  s.version          = '0.3.1'
   s.summary          = 'An enhanced drop-in replacement for Flutter’s Platform Menu API.'
   s.description      = <<-DESC
 An enhanced drop-in replacement for Flutter’s Platform Menu API with support for
