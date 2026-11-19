@@ -138,6 +138,7 @@ public class EnhancedPlatformMenuPlugin: NSObject, FlutterPlugin {
                 if !current.isEmpty { sections.append(current); current.removeAll() }
             } else if let el = makeElement(from: k) {
                 current.append(el)
+                if let twin = makeHiddenTwin(from: k) { current.append(twin) }
             }
         }
         if !current.isEmpty { sections.append(current) }
@@ -172,6 +173,33 @@ public class EnhancedPlatformMenuPlugin: NSObject, FlutterPlugin {
                       children: children)
     }
     
+    fileprivate static let hiddenTwinSuffix = "#epm-hidden-twin"
+
+    /// Hidden twin of a leaf whose shortcut needs a different input to trigger
+    /// than to display (see `KeyInput.hiddenTrigger`). Takes no space in the menu.
+    private func makeHiddenTwin(from map: [String: Any]) -> UIMenuElement? {
+        guard (map["kind"] as? String) == "leaf",
+              let shortcut = map["shortcut"] as? [String: Any],
+              let n = shortcut["shortcutTrigger"] as? NSNumber,
+              let input = KeyInput.hiddenTrigger(n.intValue),
+              let (_, mods) = safeKeyTuple(shortcut) else { return nil }
+        let id = map["id"] as? String ?? UUID().uuidString
+        let cmd = UIKeyCommand(
+            title: map["label"] as? String ?? "",
+            image: nil,
+            action: #selector(UIResponder.handleKeyCommand(_:)),
+            input: input,
+            modifierFlags: mods,
+            // UIKit rejects two commands with the same action + propertyList;
+            // the suffix is stripped again in `handleKeyCommand`.
+            propertyList: id + EnhancedPlatformMenuPlugin.hiddenTwinSuffix
+        )
+        cmd.attributes.insert(.hidden)
+        if #available(iOS 15.0, *) { cmd.wantsPriorityOverSystemBehavior = true }
+        if (map["enabled"] as? Bool) == false { cmd.attributes.insert(.disabled) }
+        return cmd
+    }
+
     private func makeElement(from map: [String: Any]) -> UIMenuElement? {
         guard let kind = map["kind"] as? String else { return nil }
         switch kind {
@@ -208,6 +236,10 @@ propertyList: id
 cmd.discoverabilityTitle = title
 cmd.state = checked ? .on : .off
 if !enabled { cmd.attributes.insert(.disabled) }
+if let n = shortcut["shortcutTrigger"] as? NSNumber, KeyInput.isSpecial(n.intValue),
+   #available(iOS 15.0, *) {
+    cmd.wantsPriorityOverSystemBehavior = true
+}
 return cmd
 
 } else {
@@ -233,9 +265,7 @@ return cmd
     
     private func safeKeyTuple(_ s: [String: Any]) -> (String, UIKeyModifierFlags)? {
         if let n = s["shortcutTrigger"] as? NSNumber,
-           let scalar = UnicodeScalar(n.intValue),
-           (0x20...0x7E).contains(Int(scalar.value)) {
-            let input = String(Character(scalar)).lowercased()
+           let input = KeyInput.forTrigger(n.intValue) {
             var mods: UIKeyModifierFlags = []
             if let m = s["shortcutModifiers"] as? NSNumber {
                 let bm = m.intValue // 1=⌘, 2=⇧, 4=⌥, 8=⌃
@@ -334,7 +364,10 @@ private enum Swizzler {
 
 extension UIResponder {
     @objc func handleKeyCommand(_ sender: UICommand) {
-        if let id = sender.propertyList as? String {
+        if var id = sender.propertyList as? String {
+            if id.hasSuffix(EnhancedPlatformMenuPlugin.hiddenTwinSuffix) {
+                id = String(id.dropLast(EnhancedPlatformMenuPlugin.hiddenTwinSuffix.count))
+            }
             EnhancedPlatformMenuPlugin.shared()?.onMenuItemSelected(id: id)
         }
     }

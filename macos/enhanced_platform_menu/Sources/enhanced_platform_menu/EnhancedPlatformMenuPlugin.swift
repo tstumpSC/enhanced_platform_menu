@@ -280,9 +280,8 @@ public class EnhancedPlatformMenuPlugin: NSObject, FlutterPlugin, NSMenuItemVali
 
     @MainActor private func applyShortcut(_ s: [String: Any], to item: NSMenuItem) {
         if let trig = s["shortcutTrigger"] as? NSNumber,
-           let scalar = UnicodeScalar(trig.intValue),
-           (0x20...0x7E).contains(Int(scalar.value)) {
-            item.keyEquivalent = String(Character(scalar)).lowercased()
+           let keyEquivalent = KeyEquivalent.forTrigger(trig.intValue) {
+            item.keyEquivalent = keyEquivalent
         } else if let ch = s["character"] as? String, !ch.isEmpty {
             item.keyEquivalent = String(ch.prefix(1)).lowercased()
         } else {

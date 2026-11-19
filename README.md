@@ -108,6 +108,22 @@ EnhancedPlatformMenuItem(
 
 ---
 
+## Special keys
+Shortcuts can use special keys: backspace, forward delete, escape, enter, the arrow keys, home/end, page up/down and F-keys (iPadOS: F1–F12):
+```dart
+EnhancedPlatformMenuItem(
+  label: 'Delete',
+  shortcut: const SingleActivator(LogicalKeyboardKey.delete),
+  onSelectedIntent: const DeleteIntent(),
+);
+```
+Things to know:
+- The native menu claims these keys **before Flutter sees them**, so a bare special-key shortcut takes the key away from focused text fields and `Shortcuts`. On macOS this also applies while the item is disabled.
+- **Tab is not supported.** Flutter handles Tab (focus traversal) before the native menu does, so a Tab shortcut would show but never fire, with or without modifiers.
+- On iPadOS, forward delete shows ⌦ in the menu through a hidden helper command, so you won't see a second entry. F-keys need a keyboard with a function row (or fn held).
+
+---
+
 ## Menu icons
 ### SF Symbols
 All 6.984 of Apple's SF Symbols are available to you via the SFSymbols class:

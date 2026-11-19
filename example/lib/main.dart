@@ -33,6 +33,12 @@ class ToggleFlagIntent extends Intent {
   const ToggleFlagIntent();
 }
 
+class SpecialKeyIntent extends Intent {
+  const SpecialKeyIntent(this.name);
+
+  final String name;
+}
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   WidgetsBinding.instance.platformMenuDelegate = EnhancedPlatformMenuDelegate();
@@ -49,6 +55,14 @@ class ExampleApp extends StatefulWidget {
 
 class _ExampleAppState extends State<ExampleApp> {
   final ValueNotifier<bool> _flag = ValueNotifier<bool>(false);
+  final ValueNotifier<String?> _lastAction = ValueNotifier<String?>(null);
+
+  /// Shows [what] on screen and in the console, so every menu item and
+  /// shortcut can be verified while testing.
+  void _report(String what) {
+    _lastAction.value = what;
+    debugPrint(what);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,44 +72,50 @@ class _ExampleAppState extends State<ExampleApp> {
       actions: <Type, Action<Intent>>{
         AboutIntent: CallbackAction<AboutIntent>(
           onInvoke: (i) {
-            debugPrint('About…');
+            _report('About');
             return null;
           },
         ),
         PreferencesIntent: CallbackAction<PreferencesIntent>(
           onInvoke: (i) {
-            debugPrint('Open Preferences');
+            _report('Preferences');
             return null;
           },
         ),
         NewDocIntent: CallbackAction<NewDocIntent>(
           onInvoke: (i) {
-            debugPrint('New document');
+            _report('New document');
             return null;
           },
         ),
         CloseWindowIntent: CallbackAction<CloseWindowIntent>(
           onInvoke: (i) {
-            debugPrint('Close window');
+            _report('Close window');
             return null;
           },
         ),
         UndoIntent: CallbackAction<UndoIntent>(
           onInvoke: (i) {
-            debugPrint('Undo');
+            _report('Undo');
             return null;
           },
         ),
         RedoIntent: CallbackAction<RedoIntent>(
           onInvoke: (i) {
-            debugPrint('Redo');
+            _report('Redo');
             return null;
           },
         ),
         ToggleFlagIntent: CallbackAction<ToggleFlagIntent>(
           onInvoke: (i) {
             _flag.value = !_flag.value;
-            debugPrint('Toggled flag -> ${_flag.value}');
+            _report('Toggle flag -> ${_flag.value ? 'ON' : 'OFF'}');
+            return null;
+          },
+        ),
+        SpecialKeyIntent: CallbackAction<SpecialKeyIntent>(
+          onInvoke: (i) {
+            _report(i.name);
             return null;
           },
         ),
@@ -107,14 +127,20 @@ class _ExampleAppState extends State<ExampleApp> {
             return PlatformMenuBar(
               menus: [
                 _customMenu,
+                _specialKeysMenu,
                 _platformProvidedMenuItems,
                 ..._standardMenus,
               ],
               child: Center(
-                child: Text(
-                  'Hello desktop/iPadOS!\nFlag is ${value ? 'ON' : 'OFF'}',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Color(0xFFE0E0E0)),
+                child: ValueListenableBuilder<String?>(
+                  valueListenable: _lastAction,
+                  builder:
+                      (_, key, _) => Text(
+                        'Hello desktop/iPadOS!\nFlag is ${value ? 'ON' : 'OFF'}\n'
+                        'Last action: ${key ?? '-'}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Color(0xFFE0E0E0)),
+                      ),
                 ),
               ),
             );
@@ -122,9 +148,10 @@ class _ExampleAppState extends State<ExampleApp> {
         );
       },
       // minimal routing so WidgetsApp compiles
-      onGenerateRoute: (settings) => PageRouteBuilder<void>(
-        pageBuilder: (context, _, _) => const SizedBox.shrink(),
-      ),
+      onGenerateRoute:
+          (settings) => PageRouteBuilder<void>(
+            pageBuilder: (context, _, _) => const SizedBox.shrink(),
+          ),
       locale: Locale("en"),
     );
   }
@@ -176,19 +203,70 @@ class _ExampleAppState extends State<ExampleApp> {
     ],
   );
 
+  /// One item per special key, bound to the bare key (no modifiers).
+  /// Note: the native menu claims these keys before Flutter sees them.
+  static const _specialKeys = <(String, LogicalKeyboardKey)>[
+    ('Backspace', LogicalKeyboardKey.backspace),
+    ('Forward delete', LogicalKeyboardKey.delete),
+    ('Escape', LogicalKeyboardKey.escape),
+    ('Enter', LogicalKeyboardKey.enter),
+    ('Arrow up', LogicalKeyboardKey.arrowUp),
+    ('Arrow down', LogicalKeyboardKey.arrowDown),
+    ('Arrow left', LogicalKeyboardKey.arrowLeft),
+    ('Arrow right', LogicalKeyboardKey.arrowRight),
+    ('Home', LogicalKeyboardKey.home),
+    ('End', LogicalKeyboardKey.end),
+    ('Page up', LogicalKeyboardKey.pageUp),
+    ('Page down', LogicalKeyboardKey.pageDown),
+    ('F1', LogicalKeyboardKey.f1),
+    ('F2', LogicalKeyboardKey.f2),
+    ('F3', LogicalKeyboardKey.f3),
+    ('F4', LogicalKeyboardKey.f4),
+    ('F5', LogicalKeyboardKey.f5),
+    ('F6', LogicalKeyboardKey.f6),
+    ('F7', LogicalKeyboardKey.f7),
+    ('F8', LogicalKeyboardKey.f8),
+    ('F9', LogicalKeyboardKey.f9),
+    ('F10', LogicalKeyboardKey.f10),
+    ('F11', LogicalKeyboardKey.f11),
+    ('F12', LogicalKeyboardKey.f12),
+  ];
+
+  PlatformMenu get _specialKeysMenu => PlatformMenu(
+    label: 'Special keys',
+    menus: [
+      for (final (name, key) in _specialKeys)
+        EnhancedPlatformMenuItem(
+          label: name,
+          shortcut: SingleActivator(key),
+          onSelectedIntent: SpecialKeyIntent(name),
+        ),
+      // With a modifier: should also show and trigger.
+      EnhancedPlatformMenuItem(
+        label: 'Shift + Backspace',
+        shortcut: const SingleActivator(
+          LogicalKeyboardKey.backspace,
+          shift: true,
+        ),
+        onSelectedIntent: const SpecialKeyIntent('Shift + Backspace'),
+      ),
+    ],
+  );
+
   EnhancedPlatformMenu get _platformProvidedMenuItems =>
       EnhancedPlatformMenu.custom(
         label: "Platform provided menus",
-        menus: PlatformProvidedMenuItemType.values
-            .map(
-              (e) =>
-                  PlatformProvidedMenuItem.hasMenu(e) &&
-                      e != PlatformProvidedMenuItemType.servicesSubmenu
-                  ? PlatformProvidedMenuItem(type: e)
-                  : null,
-            )
-            .nonNulls
-            .toList(),
+        menus:
+            PlatformProvidedMenuItemType.values
+                .map(
+                  (e) =>
+                      PlatformProvidedMenuItem.hasMenu(e) &&
+                              e != PlatformProvidedMenuItemType.servicesSubmenu
+                          ? PlatformProvidedMenuItem(type: e)
+                          : null,
+                )
+                .nonNulls
+                .toList(),
       );
 
   List<EnhancedPlatformMenu> get _standardMenus => [

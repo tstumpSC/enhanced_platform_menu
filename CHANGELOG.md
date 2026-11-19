@@ -1,3 +1,7 @@
+## 0.4.0
+- Shortcuts on special keys now show in the menu and trigger it: backspace, delete, escape, enter, the arrow keys, home/end, page up/down and F1–F20 (iPadOS: F1–F12; forward delete shows ⌦ via a hidden twin command). Previously only printable ASCII keys became key equivalents.
+- **Behavior change:** the native menu now claims these keys before Flutter sees them — on macOS even while the item is disabled. An app that relied on, e.g., an `escape` menu shortcut falling through to a focused text field or dialog has to account for that. The same applies to the arrow keys (focus and text navigation); on iPadOS these commands take priority over system behavior. Tab is not supported: Flutter handles it before the native menu does, so a Tab shortcut would show but never fire.
+
 ## 0.3.1
 - Relaxed Flutter constraint back to `>=3.3.0` (Dart SDK `^3.9.0`); the 0.3.0 bump to 3.41.0 was unnecessary — older Flutter ignores `Package.swift` and falls back to CocoaPods.
 - Note: SPM build requires Flutter 3.44+. On older Flutter the plugin uses CocoaPods. If you are on Flutter 3.24–3.43 with SPM explicitly enabled, either upgrade to 3.44+ or disable SPM (`flutter config --no-enable-swift-package-manager`) for this plugin.
